@@ -3,14 +3,14 @@ const userController = require('../controller/userController');
 
 const userRouter = express.Router();
 
-// userRouter.route("/self")
-//     .get(userController.getAll)
+userRouter.route("/self")
+    .get(userController.getUser)
 //     .put(userController.editUser);
 
 userRouter.route("/")
     .post(userController.saveUser);
 
-// userRouter.route("/")
+// userRouter.route("/del")
 //     .delete(userController.deleteUser);
 
 module.exports = userRouter;
