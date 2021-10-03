@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const dbConnect = require('./index');
+
+//Create user schema
 const User = dbConnect.define('User',{
     UserId: {
         type: Sequelize.UUID,
@@ -25,6 +27,10 @@ const User = dbConnect.define('User',{
         type: Sequelize.STRING,
         allowNull: false,
     },
+},{
+    timestamp: true,
+    updatedAt : 'Account_Updated',
+    createdAt : 'Account_Created'
 });
 
 module.exports = User;
