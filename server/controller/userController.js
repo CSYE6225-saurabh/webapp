@@ -1,7 +1,7 @@
 const userService = require('../service/userService');
 const validatePassword = require('../utils/encryptor');
 const validateToken = require('../utils/token');
-const errorHandler = require('../utils/errorHandler');
+const promiseHandler = require('../utils/promiseHandler');
 
 //Create new user
 const saveUser = async (req,res) => {
@@ -12,7 +12,7 @@ const saveUser = async (req,res) => {
     // check for existing user
     const findUser = await userService.findUserByUserName(userName);
     if(findUser){
-        res.status(400).json({message: "User details already exists"})
+        promiseHandler.handleFailure(res,400,"User details already exists")
     }else{
         // create new user
         const promise = userService.newUser({
@@ -22,18 +22,16 @@ const saveUser = async (req,res) => {
             LastName: lastName
         })
         promise.then((newUser) => {
-            res.status(200).json({
-                message: "User created successfully",
-                data: {
-                    UserName: newUser.UserName,
-                    FirstName: newUser.FirstName,
-                    LastName: newUser.LastName,
-                    Account_Created: newUser.Account_Created,
-                    Account_Updated: newUser.Account_Updated
-                }
-            });
+            const data = {
+                UserName: newUser.UserName,
+                FirstName: newUser.FirstName,
+                LastName: newUser.LastName,
+                Account_Created: newUser.Account_Created,
+                Account_Updated: newUser.Account_Updated
+            }
+            promiseHandler.handleSuccess(res,200,"User created successfully",data)
         }).catch((err)=>{
-            errorHandler(err,res)
+            promiseHandler.handleError(err,res)
         })
     }
 }
@@ -50,25 +48,19 @@ const getUser = async (req, res) => {
         // validate password
         const passwordValidation = validatePassword.authenticate(Password,user.dataValues.Password)
         if(passwordValidation){
-            res.status(200).json({
-                message: "User details found successfully",
-                data: {
-                    FirstName : user.dataValues.FirstName,
-                    LastName : user.dataValues.LastName,
-                    UserName : user.dataValues.UserName
-                }
-            })
+            const data = {
+                FirstName : user.dataValues.FirstName,
+                LastName : user.dataValues.LastName,
+                UserName : user.dataValues.UserName
+            }
+            promiseHandler.handleSuccess(res,200,"User details found successfully",data)
         }
         else{
-            res.status(404).json({
-                message: "Authorization Failed"
-            })
+            promiseHandler.handleFailure(res,400,"User Not Found")
         }
     }
     else{
-        res.status(404).json({
-            message: "User Not Found"
-        })
+        promiseHandler.handleFailure(res,404,"User Not Found")
     }
 }
 
@@ -85,14 +77,10 @@ const editUser = async (req, res) => {
         return count == Object.keys(key).length
     }
     if(req.body&&Object.keys(req.body).length == 0){
-        res.status(400).json({
-            message: "No data values to be updated"
-        })
+        promiseHandler.handleFailure(res,400,"No data values to be updated")
     }
     else if(!compare(req.body)){
-        return res.status(400).json({
-            message: "Invalid data imported"
-        })
+        promiseHandler.handleFailure(res,400,"Invalid data imported")
     }
     else{
         // get base64 token
@@ -119,29 +107,23 @@ const editUser = async (req, res) => {
 
                     // call update service
                     const userUpdated = await userService.findUserByUserName(user.dataValues.UserName);
-                    res.status(200).json({
-                        message: 'User updated successfully',
-                        data: {
-                            UserName: userUpdated.UserName,
-                            FirstName: userUpdated.FirstName,
-                            LastName: userUpdated.LastName,
-                            Account_Updated: userUpdated.Account_Updated
-                        }
-                    })
+                    const data = {
+                        UserName: userUpdated.UserName,
+                        FirstName: userUpdated.FirstName,
+                        LastName: userUpdated.LastName,
+                        Account_Updated: userUpdated.Account_Updated
+                    }
+                    promiseHandler.handleSuccess(res,200,'User updated successfully',data);
                 }).catch(err=>{
-                    errorHandler(err,res);
+                    promiseHandler.handleError(err,res);
                 })
             }
             else{
-                res.status(404).json({
-                    message: "Authorization Failed"
-                })
+                promiseHandler.handleFailure(res,400,"Authorization Failed")
             }
         }
         else{
-            res.status(404).json({
-                message: "User Not Found"
-            })
+            promiseHandler.handleFailure(res,404,"User Not Found")
         }
     }
 }
