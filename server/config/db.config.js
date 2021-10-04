@@ -1,8 +1,7 @@
-//Database configurations
 module.exports = {
     HOST: "localhost",
     USER: "root",
-    PASSWORD: "Saurabh@1206",
+    PASSWORD: "saurabh",
     DB: "webapp",
     dialect: "mysql"
   };
