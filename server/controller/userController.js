@@ -74,9 +74,24 @@ const getUser = async (req, res) => {
 
 const editUser = async (req, res) => {
     const authorization = req.headers.authorization
-    if(!req.body){
-        res.status(204).json({
+    const compare = (key) => {
+        const compare = ["firstName","lastName","password"]
+        let count = 0
+        for (k in key){
+            if (compare.includes(k)){
+                count += 1
+            }
+        }   
+        return count == Object.keys(key).length
+    }
+    if(req.body&&Object.keys(req.body).length == 0){
+        res.status(400).json({
             message: "No data values to be updated"
+        })
+    }
+    else if(!compare(req.body)){
+        return res.status(400).json({
+            message: "Invalid data imported"
         })
     }
     else{
@@ -93,15 +108,9 @@ const editUser = async (req, res) => {
             if(passwordValidation){
 
                 // replaces missing fields in request with existing values
-                if(!firstName){
-                    firstName = user.dataValues.FirstName
-                }
-                else if(!lastName){
-                    lastName = user.dataValues.LastName
-                }
-                else if(!password){
-                    password = Password
-                }
+                firstName = firstName?firstName: user.dataValues.FirstName
+                lastName = lastName?lastName:user.dataValues.LastName
+                password = password?password: Password
 
                 // encrypt password using bcrypt
                 hashedPassword = validatePassword.encryptPassword(password)

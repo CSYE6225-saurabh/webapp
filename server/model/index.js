@@ -9,9 +9,6 @@ const sqlze = new Sequelize(
   {
     dialect: connection.dialect,
     host: connection.host,
-    define: {
-      timestamp : false
-    }
   },
 
 )
