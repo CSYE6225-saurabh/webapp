@@ -1,38 +1,60 @@
 const userService = require('../service/userService');
-const validatePassword = require('../utils/encryptor');
+const passwordEncrypt = require('../utils/encryptor');
 const validateToken = require('../utils/token');
 const promiseHandler = require('../utils/promiseHandler');
+const validateInput = require('../utils/validation');
 
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
-    //Encrypt user using bcrypt algorithm
-    const hashpassword = validatePassword.encryptPassword(password)
+    // handling invalid credentials
+    if (!validateInput.compare2(req.body)){
+        promiseHandler.handleFailure(res,400,"Invalid credentials");    
+    }
+    // empty fields
+    else if (! userName || ! password || !firstName || !lastName) {
+        promiseHandler.handleFailure(res,400,"Credentials missing");
+    }
+    // no body from request 
+    else if(req.body&&Object.keys(req.body).length == 0){
+        promiseHandler.handleFailure(res,400,"No data values to be updated")
+    }
+    else{
+        // Encrypt user using bcrypt algorithm
+        const hashpassword = passwordEncrypt.encryptPassword(password)
 
-    // check for existing user
-    const findUser = await userService.findUserByUserName(userName);
-    if(findUser){
-        promiseHandler.handleFailure(res,400,"User details already exists")
-    }else{
-        // create new user
-        const promise = userService.newUser({
-            UserName: userName,
-            Password: hashpassword,
-            FirstName: firstName,
-            LastName: lastName
-        })
-        promise.then((newUser) => {
-            const data = {
-                UserName: newUser.UserName,
-                FirstName: newUser.FirstName,
-                LastName: newUser.LastName,
-                Account_Created: newUser.Account_Created,
-                Account_Updated: newUser.Account_Updated
+        // input validations
+        if(validateInput.validate('userName',userName) && validateInput.validate('password',password) && validateInput.validate('firstName',firstName) && validateInput.validate('lastName',lastName)){
+            // check for existing user
+            const findUser = await userService.findUserByUserName(userName);
+            if(findUser){
+                promiseHandler.handleFailure(res,400,"User details already exists")
+            }else{
+                // create new user
+                const promise = userService.newUser({
+                    UserName: userName,
+                    Password: hashpassword,
+                    FirstName: firstName,
+                    LastName: lastName
+                })
+                promise.then((newUser) => {
+                    const data = {
+                        UserId : newUser.UserId,
+                        UserName: newUser.UserName,
+                        FirstName: newUser.FirstName,
+                        LastName: newUser.LastName,
+                        Account_Created: newUser.Account_Created,
+                        Account_Updated: newUser.Account_Updated
+                    }
+                    promiseHandler.handleSuccess(res,201,"User created successfully",data)
+                }).catch((err)=>{
+                    promiseHandler.handleError(err,res)
+                })
             }
-            promiseHandler.handleSuccess(res,200,"User created successfully",data)
-        }).catch((err)=>{
-            promiseHandler.handleError(err,res)
-        })
+        }
+        else{
+            promiseHandler.handleFailure(res,400,"Input fields are not valid");
+        }
     }
 }
 
@@ -43,87 +65,98 @@ const getUser = async (req, res) => {
 
     //validate token value
     const [Username, Password] = validateToken(authorization)
-    const user = await userService.findUserByUserName(Username);
-    if (user){
-        // validate password
-        const passwordValidation = validatePassword.authenticate(Password,user.dataValues.Password)
-        if(passwordValidation){
-            const data = {
-                FirstName : user.dataValues.FirstName,
-                LastName : user.dataValues.LastName,
-                UserName : user.dataValues.UserName
+    if(!Username || !Password){
+        promiseHandler.handleFailure(res,401,"Credentials missing")
+    }
+    else if(validateInput.validate('userName',Username) && validateInput.validate('password',Password)){
+        const user = await userService.findUserByUserName(Username);
+        if (user){
+            // validate password
+            const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
+            if(passwordValidation){
+                const data = {
+                    UserId : user.dataValues.UserId,
+                    FirstName : user.dataValues.FirstName,
+                    LastName : user.dataValues.LastName,
+                    UserName : user.dataValues.UserName, 
+                    Account_Created : user.dataValues.Account_Created,
+                    Account_Updated : user.dataValues.Account_Updated
+                }
+                promiseHandler.handleSuccess(res,200,"User details found successfully",data)
             }
-            promiseHandler.handleSuccess(res,200,"User details found successfully",data)
+            else{
+                promiseHandler.handleFailure(res,401,"User Authentication Failed")
+            }
         }
         else{
-            promiseHandler.handleFailure(res,400,"User Not Found")
+            promiseHandler.handleFailure(res,404,"User Not Found")
         }
-    }
-    else{
-        promiseHandler.handleFailure(res,404,"User Not Found")
+    }else{
+        promiseHandler.handleFailure(res,400,"Input fields are not valid");
     }
 }
 
 const editUser = async (req, res) => {
+    // get base64 token
     const authorization = req.headers.authorization
-    const compare = (key) => {
-        const compare = ["firstName","lastName","password"]
-        let count = 0
-        for (k in key){
-            if (compare.includes(k)){
-                count += 1
-            }
-        }   
-        return count == Object.keys(key).length
+    const [Username, Password] = validateToken(authorization);
+    if(!Username || !Password){
+        promiseHandler.handleFailure(res,401,"Credentials missing")
     }
-    if(req.body&&Object.keys(req.body).length == 0){
+    else if(req.body&&Object.keys(req.body).length == 0){
         promiseHandler.handleFailure(res,400,"No data values to be updated")
     }
-    else if(!compare(req.body)){
+    else if(!validateInput.compare(req.body)){
         promiseHandler.handleFailure(res,400,"Invalid data imported")
     }
     else{
-        // get base64 token
-        const [Username, Password] = validateToken(authorization);
-
         // find for user details
         const user = await userService.findUserByUserName(Username);
 
         // get parameters
         var {firstName, lastName, password} = req.body;
-        if(user){
-            const passwordValidation = validatePassword.authenticate(Password,user.dataValues.Password)
-            if(passwordValidation){
+        if(validateInput.validate('userName',Username) && validateInput.validate('password',Password)){
+            if(validateInput.validate('firstName',firstName) && validateInput.validate('lastName',lastName) && validateInput.validate('password',password)){
+                if(user){
+                    const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
+                    if(passwordValidation){
 
-                // replaces missing fields in request with existing values
-                firstName = firstName?firstName: user.dataValues.FirstName
-                lastName = lastName?lastName:user.dataValues.LastName
-                password = password?password: Password
+                        // replaces missing fields in request with existing values
+                        firstName = firstName?firstName: user.dataValues.FirstName
+                        lastName = lastName?lastName:user.dataValues.LastName
+                        password = password?password: Password
 
-                // encrypt password using bcrypt
-                hashedPassword = validatePassword.encryptPassword(password)
-                userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
-                .then(async () => {
+                        // encrypt password using bcrypt
+                        hashedPassword = passwordEncrypt.encryptPassword(password)
+                        userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
+                        .then(async () => {
 
-                    // call update service
-                    const userUpdated = await userService.findUserByUserName(user.dataValues.UserName);
-                    const data = {
-                        UserName: userUpdated.UserName,
-                        FirstName: userUpdated.FirstName,
-                        LastName: userUpdated.LastName,
-                        Account_Updated: userUpdated.Account_Updated
+                            // call update service
+                            const userUpdated = await userService.findUserByUserName(user.dataValues.UserName);
+                            const data = {
+                                UserId : userUpdated.UserId,
+                                UserName: userUpdated.UserName,
+                                FirstName: userUpdated.FirstName,
+                                LastName: userUpdated.LastName,
+                                Account_Updated: userUpdated.Account_Updated
+                            }
+                            promiseHandler.handleSuccess(res,200,'User updated successfully',data);
+                        }).catch(err=>{
+                            promiseHandler.handleError(err,res);
+                        })
                     }
-                    promiseHandler.handleSuccess(res,200,'User updated successfully',data);
-                }).catch(err=>{
-                    promiseHandler.handleError(err,res);
-                })
+                    else{
+                        promiseHandler.handleFailure(res,401,"Authorization Failed")
+                    }
+                }
+                else{
+                    promiseHandler.handleFailure(res,404,"User Not Found")
+                }
+            }else{
+                promiseHandler.handleFailure(res,400,"Input fields are not valid")
             }
-            else{
-                promiseHandler.handleFailure(res,400,"Authorization Failed")
-            }
-        }
-        else{
-            promiseHandler.handleFailure(res,404,"User Not Found")
+        }else{
+            promiseHandler.handleFailure(res,400,"Input fields are not valid")
         }
     }
 }
