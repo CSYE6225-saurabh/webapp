@@ -1,5 +1,5 @@
-const {describe} = require('mocha');
-const {expect} = require('chai');
+const { describe } = require('mocha');
+const { expect }  = require('chai');
 
 describe('User should receive user details if authenticated',()=>{
     let userName = "test@test.com";

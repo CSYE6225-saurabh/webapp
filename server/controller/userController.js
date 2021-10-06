@@ -76,7 +76,9 @@ const getUser = async (req, res) => {
                     UserId : user.dataValues.UserId,
                     FirstName : user.dataValues.FirstName,
                     LastName : user.dataValues.LastName,
-                    UserName : user.dataValues.UserName
+                    UserName : user.dataValues.UserName, 
+                    Account_Created : user.dataValues.Account_Created,
+                    Account_Updated : user.dataValues.Account_Updated
                 }
                 promiseHandler.handleSuccess(res,200,"User details found successfully",data)
             }
