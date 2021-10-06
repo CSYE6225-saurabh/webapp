@@ -129,18 +129,8 @@ const editUser = async (req, res) => {
                         // encrypt password using bcrypt
                         hashedPassword = passwordEncrypt.encryptPassword(password)
                         userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
-                        .then(async () => {
-
-                            // call update service
-                            const userUpdated = await userService.findUserByUserName(user.dataValues.UserName);
-                            const data = {
-                                UserId : userUpdated.UserId,
-                                UserName: userUpdated.UserName,
-                                FirstName: userUpdated.FirstName,
-                                LastName: userUpdated.LastName,
-                                Account_Updated: userUpdated.Account_Updated
-                            }
-                            promiseHandler.handleSuccess(res,200,'User updated successfully',data);
+                        .then(() => {
+                                res.status(200).send()        
                         }).catch(err=>{
                             promiseHandler.handleError(err,res);
                         })
