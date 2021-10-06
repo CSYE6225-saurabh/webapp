@@ -9,7 +9,6 @@ const routes = require("./routes/index");
 
 //reset database
 // sequelize.sync();
-// sequelize.sync({force: true});
 
 //database connection
 sequelize.authenticate().then(()=>{

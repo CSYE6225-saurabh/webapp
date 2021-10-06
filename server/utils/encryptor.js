@@ -14,6 +14,29 @@ const authenticate = (password, hash) => {
     return isAuthenticated;
 }
 
+//field validator
+const compare = (key) => {
+    const compare = ["firstName","lastName","password"]
+    let count = 0
+    for (k in key){
+        if (compare.includes(k)){
+            count += 1
+        }
+    }   
+    return count == Object.keys(key).length
+}
+
+const compare2 = (key) => {
+    const compare = ["firstName","lastName","password","userName"]
+    let count = 0
+    for (k in key){
+        if (compare.includes(k)){
+            count += 1
+        }
+    }   
+    return count == Object.keys(key).length
+}
+
 module.exports = {
-    encryptPassword, authenticate
+    encryptPassword, authenticate, compare, compare2
 }

@@ -1,14 +1,20 @@
 const userService = require('../service/userService');
-const validatePassword = require('../utils/encryptor');
+const validator = require('../utils/encryptor');
 const validateToken = require('../utils/token');
 const promiseHandler = require('../utils/promiseHandler');
 
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
-    //Encrypt user using bcrypt algorithm
-    const hashpassword = validatePassword.encryptPassword(password)
-
+    // Encrypt user using bcrypt algorithm
+    const hashpassword = validator.encryptPassword(password)
+    if (! userName || ! password || !firstName || !lastName) {
+        promiseHandler.handleFailure(res,400,"Credentials missing");
+    }
+    // handling invalid credentials
+    if (!validator.compare2(req.body)){
+        promiseHandler.handleFailure(res,400,"Invalid credentials");
+    }
     // check for existing user
     const findUser = await userService.findUserByUserName(userName);
     if(findUser){
@@ -29,7 +35,7 @@ const saveUser = async (req,res) => {
                 Account_Created: newUser.Account_Created,
                 Account_Updated: newUser.Account_Updated
             }
-            promiseHandler.handleSuccess(res,200,"User created successfully",data)
+            promiseHandler.handleSuccess(res,201,"User created successfully",data)
         }).catch((err)=>{
             promiseHandler.handleError(err,res)
         })
@@ -43,10 +49,13 @@ const getUser = async (req, res) => {
 
     //validate token value
     const [Username, Password] = validateToken(authorization)
+    if(!Username || !Password){
+        promiseHandler.handleFailure(res,400,"Credentials missing")
+    }
     const user = await userService.findUserByUserName(Username);
     if (user){
         // validate password
-        const passwordValidation = validatePassword.authenticate(Password,user.dataValues.Password)
+        const passwordValidation = validator.authenticate(Password,user.dataValues.Password)
         if(passwordValidation){
             const data = {
                 FirstName : user.dataValues.FirstName,
@@ -66,33 +75,25 @@ const getUser = async (req, res) => {
 
 const editUser = async (req, res) => {
     const authorization = req.headers.authorization
-    const compare = (key) => {
-        const compare = ["firstName","lastName","password"]
-        let count = 0
-        for (k in key){
-            if (compare.includes(k)){
-                count += 1
-            }
-        }   
-        return count == Object.keys(key).length
-    }
     if(req.body&&Object.keys(req.body).length == 0){
         promiseHandler.handleFailure(res,400,"No data values to be updated")
     }
-    else if(!compare(req.body)){
+    else if(!validator.compare(req.body)){
         promiseHandler.handleFailure(res,400,"Invalid data imported")
     }
     else{
         // get base64 token
         const [Username, Password] = validateToken(authorization);
-
+        if(!Username || !Password){
+            promiseHandler.handleFailure(res,400,"Credentials missing")
+        }
         // find for user details
         const user = await userService.findUserByUserName(Username);
 
         // get parameters
         var {firstName, lastName, password} = req.body;
         if(user){
-            const passwordValidation = validatePassword.authenticate(Password,user.dataValues.Password)
+            const passwordValidation = validator.authenticate(Password,user.dataValues.Password)
             if(passwordValidation){
 
                 // replaces missing fields in request with existing values
@@ -101,7 +102,7 @@ const editUser = async (req, res) => {
                 password = password?password: Password
 
                 // encrypt password using bcrypt
-                hashedPassword = validatePassword.encryptPassword(password)
+                hashedPassword = validator.encryptPassword(password)
                 userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
                 .then(async () => {
 
