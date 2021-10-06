@@ -13,6 +13,10 @@ const handleSuccess = (res,status,msg,data) => {
     return res.status(status).json({message:msg,data:data});
 }
 
+const handlePromise = (res,status) => {
+    return res.status(status);
+}
+
 module.exports = {
-    handleError,handleFailure,handleSuccess
+    handleError,handleFailure,handleSuccess,handlePromise
 }
