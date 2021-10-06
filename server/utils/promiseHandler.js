@@ -8,7 +8,7 @@ const handleFailure = (res,status,msg) =>{
     return res.status(status).json({message:msg});
 }
 
-// To handle success responses
+// Function to send success response
 const handleSuccess = (res,status,msg,data) => {
     return res.status(status).json({message:msg,data:data});
 }

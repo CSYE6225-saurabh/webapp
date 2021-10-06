@@ -14,6 +14,8 @@ const authenticate = (password, hash) => {
     return isAuthenticated;
 }
 
+
+
 module.exports = {
     encryptPassword, authenticate
 }

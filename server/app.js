@@ -1,6 +1,5 @@
 "use strict";
 const express = require("express");
-const mysql = require("mysql2");
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const sequelize = require("./model/index");
@@ -9,7 +8,6 @@ const routes = require("./routes/index");
 
 //reset database
 // sequelize.sync();
-// sequelize.sync({force: true});
 
 //database connection
 sequelize.authenticate().then(()=>{
