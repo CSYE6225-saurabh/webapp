@@ -1,10 +1,6 @@
 */dist
 */node_modules/**
-<<<<<<< HEAD
-
-=======
 .env
->>>>>>> 16c43141a5e4d5f8c4531e4705dd8503656f0160
 # Logs
 logs
 *.log
