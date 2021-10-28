@@ -13,8 +13,4 @@ const sqlze = new Sequelize(
   },
 
 )
-module.exports = {
-  sqlze,
-  imgdb
-}  
-;
+module.exports = sqlze;
