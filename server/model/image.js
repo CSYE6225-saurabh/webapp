@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
-const Image = Sequelize.define(
+const dbConnect = require('./index');
+
+const Image = dbConnect.define(
     "Image",
     { 
       id: {
@@ -20,10 +22,6 @@ const Image = Sequelize.define(
           type: Sequelize.UUID,
           foreignKey: true,
           allowNull: false
-      },
-      file_path: {
-          type: Sequelize.STRING,
-          allowNull: false
       }
     },
     {
@@ -34,7 +32,7 @@ Image.associate = function (models) {
     Image.belongsTo(models.User, {
         onDelete: "cascade",
         as: "ProfileImage",
-        foreignKey: "imageid",
+        foreignKey: "userID",
     });
 };
 module.exports = Image;

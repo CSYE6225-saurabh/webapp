@@ -1,11 +1,20 @@
-const dotenv = require('dotenv');
-dotenv.config()
+const fs = require('fs');
+const data = fs.readFileSync("/home/ubuntu/server/config.json");
+const temp = JSON.parse(data);
 
-//Database configurations
 module.exports = {
-    HOST: process.env.HOST,
-    USER: process.env.USERNAME,
-    PASSWORD: process.env.PASSWORD,
-    DB: process.env.DB,
-    dialect : 'mysql'
+    HOST: temp.host.split(":")[0],
+    USER: temp.username,
+    PASSWORD: temp.password,
+    DB: temp.database,
+    dialect : 'mysql',
+    s3: temp.s3
   };
+  
+  // module.exports = {
+  //   HOST: "localhost",
+  //   USER: "root",
+  //   PASSWORD: "saurabh",
+  //   DB:"webapp",
+  //   dialect : 'mysql'
+  // };

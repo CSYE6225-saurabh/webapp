@@ -14,7 +14,7 @@ const handleSuccess = (res,status,msg,data) => {
 }
 
 const handlePromise = (res,status) => {
-    return res.status(status);
+    return res.send(status);
 }
 
 module.exports = {
