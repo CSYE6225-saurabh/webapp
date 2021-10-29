@@ -7,7 +7,7 @@ const User = require("./model/user");
 const routes = require("./routes/index");
 
 //reset database
-// sequelize.sync();
+sequelize.sync();
 
 //database connection
 sequelize.authenticate().then(()=>{
@@ -27,5 +27,5 @@ app.use(express.json());
 routes(app);
 
 //server connection
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 4000
 app.listen(port, () => console.log("Server is listening on port " + port))

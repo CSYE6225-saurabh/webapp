@@ -14,6 +14,7 @@ const validate = (input,data) => {
             return re.test(data)
     }
 }
+
 //field validator
 const compare = (key) => {
     const compare = ["firstName","lastName","password"]
@@ -36,6 +37,16 @@ const compare2 = (key) => {
     }   
     return count == Object.keys(key).length
 }
+
+const compare3 = (key) =>{
+    const compare = ['png','jpg','jpeg','gif'];
+    if (compare.includes(key)){
+        return true;
+    }else{
+        return false;
+    }
+
+}
 module.exports = {
-    validate,compare, compare2
+    validate,compare, compare2, compare3
 }
