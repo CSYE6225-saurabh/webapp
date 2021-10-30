@@ -1,5 +1,3 @@
-const bcrypt = require('bcrypt');
-
 // This function is used to encrypt password by Salt and hash
 const encryptPassword = (password) => {
     const salt = bcrypt.genSaltSync(10);
