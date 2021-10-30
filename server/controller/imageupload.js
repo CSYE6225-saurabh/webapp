@@ -6,8 +6,7 @@ const validateInput = require('../utils/validation');
 const passwordEncrypt = require('../utils/encryptor')
 const connection = require('../config/db.config')
 const aws = require('aws-sdk');
-const multer = require('multer');
-const s3 = new aws.S3(s);
+const s3 = new aws.S3();
 // Module import
 const imageUpload =async (req,res) => {
   const authorization = req.headers.authorization
