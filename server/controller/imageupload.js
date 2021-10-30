@@ -5,13 +5,14 @@ const validateToken = require('../utils/token');
 const validateInput = require('../utils/validation');
 const passwordEncrypt = require('../utils/encryptor')
 const connection = require('../config/db.config')
-const fs = require('fs');
 const aws = require('aws-sdk');
-const s3 = new aws.S3();
+const multer = require('multer');
+const s3 = new aws.S3(s);
+// Module import
 const imageUpload =async (req,res) => {
   const authorization = req.headers.authorization
-  console.log(req)
-  const fileType = req.file.mimetype.split('/')[1];
+  var bufferedImage = new Buffer(req.body.toString("binary"),"base64");
+  const fileType = req.headers['content-type'].split('/')[1];
   //validate token value
   const [Username, Password] = validateToken(authorization)
   if(!Username || !Password){
@@ -21,24 +22,18 @@ const imageUpload =async (req,res) => {
   else if(validateInput.validate('userName',Username) && validateInput.validate('password',Password) && validateInput.compare3(fileType)){
     const user = await userService.findUserByUserName(Username);
     if(user){
-      console.log(user)
       const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
       if(passwordValidation){
         const image =await imageService.getImage(user.dataValues.UserId);
-        console.log(image)
-        console.log(user.dataValues)
         if(image){
           promiseHandler.handleFailure(res,400,"Image details for user already exists")
         }else{
-          fs.readFile(req.file.path,async (err,data)=>{
-
-            let fileExtension = req.file.mimetype.split('/')[1];
             const params = {
               Bucket : connection.s3,
-              Key : req.file.originalname,
-              Body : new Buffer(data,'base64'),
+              Key : `${user.dataValues.UserId}-profile-picture.${fileType}`,
+              Body : bufferedImage,
               ContentEncoding : 'base64',
-              ContentType : fileExtension
+              ContentType : fileType
             }
             // Uploading files to the bucket
             const promise = await s3.upload(params).promise();
@@ -58,7 +53,6 @@ const imageUpload =async (req,res) => {
             }else{
               promiseHandler.handleFailure(res,400,"Error adding image files")
             } 
-          })
         } 
       }
       else{
@@ -147,7 +141,6 @@ const deleteImage = async (req, res) => {
                     else{
                       const promImDel =imageService.deleteImage(params.id);
                       if(promImDel){
-                        console.log("here")
                         promiseHandler.handlePromise(res,200);
 
                       }else{
