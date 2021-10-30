@@ -11,10 +11,10 @@ module.exports = {
     s3: temp.s3
   };
   
-  // module.exports = {
-  //   HOST: "localhost",
-  //   USER: "root",
-  //   PASSWORD: "saurabh",
-  //   DB:"webapp",
-  //   dialect : 'mysql'
-  // };
+// module.exports = {
+//   HOST: "localhost",
+//   USER: "root",
+//   PASSWORD: "saurabh",
+//   DB:"webapp",
+//   dialect : 'mysql'
+// };
