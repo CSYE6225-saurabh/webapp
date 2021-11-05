@@ -1,4 +1,6 @@
 // This function is used to encrypt password by Salt and hash
+const bcrypt = require('bcrypt');
+
 const encryptPassword = (password) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
