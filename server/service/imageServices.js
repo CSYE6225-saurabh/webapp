@@ -1,4 +1,4 @@
-const imageUtils = require("../utils/imageUtil")
+
 const Image = require("../model/image")
 
 const uploadService =async (uploadData)=>{
