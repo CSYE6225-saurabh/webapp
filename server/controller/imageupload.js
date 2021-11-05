@@ -23,36 +23,41 @@ const imageUpload =async (req,res) => {
     if(user){
       const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
       if(passwordValidation){
-        const image =await imageService.getImage(user.dataValues.UserId);
-        if(image){
-          promiseHandler.handleFailure(res,400,"Image details for user already exists")
-        }else{
-            const params = {
-              Bucket : connection.s3,
-              Key : `${user.dataValues.UserId}-profile-picture.${fileType}`,
-              Body : bufferedImage,
-              ContentEncoding : 'base64',
-              ContentType : fileType
+        const params = {
+          Bucket : connection.s3,
+          Key : `${user.dataValues.UserId}-profile-picture.${fileType}`,
+          Body : bufferedImage,
+          ContentEncoding : 'base64',
+          ContentType : fileType
+        }
+        // Uploading files to the bucket
+        const promise = await s3.upload(params).promise();
+        console.log(promise)
+        if(promise){
+            let uploadData = {
+                file_name : promise.Key,
+                url : promise.Location,
+                userID: user.dataValues.UserId
             }
-            // Uploading files to the bucket
-            const promise = await s3.upload(params).promise();
-            console.log(promise)
-            if(promise){
-                let uploadData = {
-                    file_name : promise.Key,
-                    url : promise.Location,
-                    userID: user.dataValues.UserId
-                }
-                const prom = await imageService.uploadService(uploadData);
-                if(prom){
-                  promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom);
-                }else{
-                  promiseHandler.handleFailure(res,404,"Error adding image files")
-                }
+            const image =await imageService.getImage(user.dataValues.UserId);
+            if(image){
+              const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
+              if(prom1){
+                promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom1);
+              }else{
+                promiseHandler.handleFailure(res,404,"Error adding image files")
+              }             
             }else{
-              promiseHandler.handleFailure(res,400,"Error adding image files")
-            } 
-        } 
+              const prom = await imageService.uploadService(uploadData);
+              if(prom){
+                promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom);
+              }else{
+                promiseHandler.handleFailure(res,404,"Error adding image files")
+              }
+            }
+        }else{
+          promiseHandler.handleFailure(res,400,"Error adding image files")
+        }  
       }
       else{
         promiseHandler.handleFailure(res,401,"User Authentication Failed")

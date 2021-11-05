@@ -14,8 +14,13 @@ const deleteImage =async (id) => {
     const prom = await Image.destroy({where: {id: id}});
     return prom
 }
+const updateImage =async (data,id) =>{
+    const prom = await Image.update(data,{where: {UserId: id}});
+    return prom;
+}
 module.exports = {
     uploadService,
     getImage,
-    deleteImage
+    deleteImage,
+    updateImage
 }

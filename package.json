@@ -12,6 +12,7 @@
   "dependencies": {
     "assert": "^2.0.0",
     "aws-sdk": "^2.1016.0",
+    "bcrypt": "^5.0.1",
     "binary-parser": "^2.0.1",
     "body-parser": "^1.19.0",
     "chai": "^4.3.4",
