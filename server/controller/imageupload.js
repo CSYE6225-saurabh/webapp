@@ -51,7 +51,7 @@ const imageUpload = async (req,res) => {
           s3.deleteObject({
             Bucket : params.Bucket,
             Key : params.Key
-          },(err,data)=>{
+          },async (err,data)=>{
             if(err){
               promiseHandler.handleError(err,res);
             }
