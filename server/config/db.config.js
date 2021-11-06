@@ -1,4 +1,4 @@
-try{
+
 const fs = require('fs');
 const data = fs.readFileSync("/home/ubuntu/server/config.json");
 const temp = JSON.parse(data);
@@ -10,14 +10,14 @@ module.exports = {
     dialect : 'mysql',
     s3: temp.s3
   };
-}catch(e){
-module.exports = {
-  HOST: "localhost",
-  USER: "root",
-  PASSWORD: "saurabh",
-  DB:"webapp",
-  dialect : 'mysql'
-};
-}
+
+// module.exports = {
+//   HOST: "localhost",
+//   USER: "root",
+//   PASSWORD: "saurabh",
+//   DB:"webapp",
+//   dialect : 'mysql'
+// };
+
 
   
