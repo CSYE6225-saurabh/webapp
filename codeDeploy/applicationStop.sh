@@ -1,8 +1,7 @@
 #!/bin/bash
-echo "get the proces id"
-PID=`ps -eaf | grep "node server/app.js" | grep -v grep | awk '{print $2}'`
-echo "process id not empty ? $PID"
+cd /home/ubuntu
+sudo rm -rf webapp
+PID = `ps aux | grep PM2`
 if [[ "" !=  "$PID" ]]; then
-  echo "killing $PID"
-  sudo kill -9 $PID
+ sudo kill -9 $PID
 fi
