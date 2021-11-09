@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd /home/ubuntu/webapp
-sudo npm i
-sudo npm i pm2 -g
 
-sudo pm2 start server/app.js
+sudo npm install
+sudo npm i pm2 -g
+pm2 start server/app.js >> touch debug.log 2>&1 &
