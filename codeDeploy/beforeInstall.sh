@@ -10,4 +10,6 @@ sudo rm -rf webapp
 # sudo fuser -n tcp -k 4000 
 
 PID = `ps aux | grep PM2`
-sudo kill -9 $PID
+if [[ "" !=  "$PID" ]]; then
+ sudo kill -9 $PID
+fi
