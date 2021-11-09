@@ -40,7 +40,7 @@ const imageUpload = async (req,res) => {
               }
               const prom = await imageService.uploadService(uploadData);
               if(prom){
-                promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom);
+                promiseHandler.handlePromise(res,"Image updated for the user successfully");
               }else{
                 promiseHandler.handleFailure(res,404,"Error adding image files")
               }
