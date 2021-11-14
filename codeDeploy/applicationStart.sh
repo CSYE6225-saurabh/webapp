@@ -1,12 +1,12 @@
 #!/bin/bash
 
 cd /home/ubuntu/webapp
-if [ -d "logs" ] 
+if [ -d "cloudwatch" ] 
 then
-    echo "Directory /home/centos/webapp/logs exists." 
+    echo "Directory /home/centos/webapp/cloudwatch exists." 
 else
-    sudo touch logs/webapp.log
-    sudo chmod 666 logs/webapp.log
+    sudo touch cloudwatch/webapp.log
+    sudo chmod 666 cloudwatch/webapp.log
 fi
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
 sudo npm install
