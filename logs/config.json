@@ -15,15 +15,6 @@
                 ]
             }
         },
-        "metrics": {
-            "metrics_collected": {
-              "statsd": {
-                "service_address": ":8125",
-                "metrics_collection_interval": 10,
-                "metrics_aggregation_interval": 0
-              }
-            }
-          },
         "log_stream_name": "cloudwatch_log_stream"
     }
 }
