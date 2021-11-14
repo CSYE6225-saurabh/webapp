@@ -4,6 +4,7 @@ const promiseHandler = require('../utils/promiseHandler')
 const validateToken = require('../utils/token');
 const validateInput = require('../utils/validation');
 const passwordEncrypt = require('../utils/encryptor')
+const logs = require('../utils/logs');
 const connection = require('../config/db.config')
 const aws = require('aws-sdk');
 const s3 = new aws.S3();
@@ -41,11 +42,14 @@ const imageUpload = async (req,res) => {
               const prom = await imageService.uploadService(uploadData);
               if(prom){
                 promiseHandler.handlePromise(res,"Image updated for the user successfully");
+                logs.success("Image updated for the user successfully");
               }else{
                 promiseHandler.handleFailure(res,404,"Error adding image files")
+                logs.error("Error adding image files");
               }
           }else{
-            promiseHandler.handleFailure(res,400,"Error adding image files")            
+            promiseHandler.handleFailure(res,400,"Error adding image files") 
+            logs.error("Error adding image files")           
           }
         }else{
           s3.deleteObject({
@@ -66,24 +70,30 @@ const imageUpload = async (req,res) => {
                 const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
                 if(prom1){
                   promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom1);
+                  logs.success("Image added to the bucket successfully")
                 }else{
                   promiseHandler.handleFailure(res,404,"Error adding image files")
+                  logs.error("Error adding image files")
                 } 
               }else{
                 promiseHandler.handleFailure(res,404,"Error adding image files")
+                logs.error("Error adding image files")
               }
             }
           })          
         }
       }else{
         promiseHandler.handleFailure(res,401,"User Authentication Failed")
+        logs.error("User Authentication Failed")
       }
     }else{
       promiseHandler.handleFailure(res,404,"User Not Found")
+      logs.error("User Not Found")
     }  
   }
   else{
     promiseHandler.handleFailure(res,400,"Input fields are not valid");
+    logs.error("Input fields are not valid")
   }
 }
 
@@ -112,20 +122,25 @@ const getImage = async (req,res) =>{
                 userId: image.dataValues.userID
               }
               promiseHandler.handleSuccess(res,200,"Image data found for user",params)
+              logs.success("Image data found for user")
             }
             else{
               promiseHandler.handleFailure(res,404,"Image details not found")
+              logs.error("Image details not found")
             }
           }
           else{
               promiseHandler.handleFailure(res,401,"User Authentication Failed")
+              logs.error("User Authentication Failed")
           }
       }
       else{
           promiseHandler.handleFailure(res,404,"User Not Found")
+          logs.error("User Not Found")
       }
   }else{
       promiseHandler.handleFailure(res,400,"Input fields are not valid");
+      logs.error("Input fields are not valid")
   }
 }
 const deleteImage = async (req, res) => {
@@ -161,26 +176,31 @@ const deleteImage = async (req, res) => {
                       const promImDel =imageService.deleteImage(params.id);
                       if(promImDel){
                         promiseHandler.handlePromise(res,200);
-
+                        logs.success("Image deleted successfully")
                       }else{
                         promiseHandler.handleFailure(res,400,"Error deleting image")
+                        logs.error("Error deleting image")
                       }
                     }
                   })                          
             }
             else{
               promiseHandler.handleFailure(res,404,"Image details not found")
+              logs.error("Image details not found")
             }
           }
           else{
               promiseHandler.handleFailure(res,401,"User Authentication Failed")
+              logs.error("User Authentication Failed")
           }
       }
       else{
           promiseHandler.handleFailure(res,404,"User Not Found")
+          logs.error("User Not Found")
       }
   }else{
       promiseHandler.handleFailure(res,400,"Input fields are not valid");
+      logs.error("Input fields are not valid")
   } 
 }
 module.exports = {
