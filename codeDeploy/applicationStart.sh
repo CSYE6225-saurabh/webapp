@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
+
 cd /home/ubuntu/webapp
 # if [ -d "logs" ] 
 # then
@@ -10,7 +10,7 @@ cd /home/ubuntu/webapp
 #     sudo chmod 644 logs/webapp.log
 # fi
 
-
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
 sudo npm install
 sudo npm i pm2 -g
 pm2 start server/app.js >> debug.log 2>&1 &
