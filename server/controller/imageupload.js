@@ -8,7 +8,6 @@ const metrics = require('../utils/metrics');
 const logs = require('../utils/logs');
 const connection = require('../config/db.config')
 const aws = require('aws-sdk');
-const { mapFinderOptions } = require('sequelize/types/lib/utils');
 const s3 = new aws.S3();
 // Module import
 const imageUpload = async (req,res) => {
