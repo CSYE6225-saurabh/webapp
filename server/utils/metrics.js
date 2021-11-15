@@ -32,3 +32,5 @@ metrics.timing("Image.DELETE.databaseDeleteUserImage");
 metrics.timing("Image.POST.S3NewUserImage");
 metrics.timing("Image.DELETE.S3DeleteToCreateUserImage");
 metrics.timing("Image.DELETE.S3DeleteUserImage");
+
+module.exports = metrics
