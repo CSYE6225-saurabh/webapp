@@ -6,7 +6,7 @@ aws configure list
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
     -a fetch-config \
     -m ec2 \
-    -c file:/home/ubuntu/webapp/logs/config.json \
+    -c file:/home/ubuntu/webapp/config.json \
     -scd ..
 cd /home/ubuntu/webapp 
 sudo rm -rf node_modules
