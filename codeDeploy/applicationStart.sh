@@ -13,4 +13,5 @@ cd /home/ubuntu/webapp
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
 sudo npm install
 sudo npm i pm2 -g
+sudo npm update
 pm2 start server/app.js >> debug.log 2>&1 &
