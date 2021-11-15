@@ -3,10 +3,14 @@ const passwordEncrypt = require('../utils/encryptor');
 const validateToken = require('../utils/token');
 const promiseHandler = require('../utils/promiseHandler');
 const validateInput = require('../utils/validation');
+const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
+    const timer = new Date();
+    const databaseTime = new Date();
+    metrics.increment("User.POST.newUser");
     // handling invalid credentials
     if (!validateInput.compare2(req.body)){
         promiseHandler.handleFailure(res,400,"Invalid credentials"); 
@@ -42,6 +46,7 @@ const saveUser = async (req,res) => {
                     LastName: lastName
                 })
                 promise.then((newUser) => {
+                    metrics.timing("User.POST.databaseNewUser",databaseTime);
                     const data = {
                         UserId : newUser.UserId,
                         UserName: newUser.UserName,
@@ -51,6 +56,7 @@ const saveUser = async (req,res) => {
                         Account_Updated: newUser.Account_Updated
                     }
                     promiseHandler.handleSuccess(res,201,"User created successfully",data)
+                    metrics.timing("User.POST.newUser",timer);
                     log.success(`User created: ${newUser.UserId}`)
                 }).catch((err)=>{
                     promiseHandler.handleError(err,res)
@@ -67,6 +73,9 @@ const saveUser = async (req,res) => {
 
 // get user details
 const getUser = async (req, res) => {
+    const timer = new Date();
+    const databaseTime = new Date();
+    metrics.increment("User.GET.getUser");
     //get base64 token
     const authorization = req.headers.authorization
 
@@ -82,6 +91,7 @@ const getUser = async (req, res) => {
             // validate password
             const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
             if(passwordValidation){
+                metrics.timing("User.GET.databaseGetUser",databaseTime);
                 const data = {
                     UserId : user.dataValues.UserId,
                     FirstName : user.dataValues.FirstName,
@@ -91,6 +101,7 @@ const getUser = async (req, res) => {
                     Account_Updated : user.dataValues.Account_Updated
                 }
                 promiseHandler.handleSuccess(res,200,"User details found successfully",data)
+                metrics.timing("User.GET.getUser",timer);
                 log.success("User details found successfully")
             }
             else{
@@ -109,6 +120,9 @@ const getUser = async (req, res) => {
 }
 
 const editUser = async (req, res) => {
+    const timer = new Date();
+    const databaseTime = new Date();
+    metrics.increment("User.PUT.updateUser");
     // get base64 token
     const authorization = req.headers.authorization
     const [Username, Password] = validateToken(authorization);
@@ -145,7 +159,9 @@ const editUser = async (req, res) => {
                         hashedPassword = passwordEncrypt.encryptPassword(password)
                         userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
                         .then(() => {
+                            metrics.timing("User.PUT.databaseUpdateUser",databaseTime);
                             promiseHandler.handlePromise(res,200);
+                            metrics.timing("User.PUT.updateUser",timer);
                             log.success("User updated successfully")        
                         }).catch(err=>{
                             promiseHandler.handleError(err,res);

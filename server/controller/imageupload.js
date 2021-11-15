@@ -4,12 +4,18 @@ const promiseHandler = require('../utils/promiseHandler')
 const validateToken = require('../utils/token');
 const validateInput = require('../utils/validation');
 const passwordEncrypt = require('../utils/encryptor')
+const metrics = require('../utils/metrics');
 const logs = require('../utils/logs');
 const connection = require('../config/db.config')
 const aws = require('aws-sdk');
+const { mapFinderOptions } = require('sequelize/types/lib/utils');
 const s3 = new aws.S3();
 // Module import
 const imageUpload = async (req,res) => {
+  const timer = new Date();
+  const databaseTime = new Date();
+  const s3Time = new Date();
+  metrics.increment("Image.POST.newUserImage");
   const authorization = req.headers.authorization
   var bufferedImage = new Buffer(req.body.toString("binary"),"base64");
   const fileType = req.headers['content-type'].split('/')[1];
@@ -34,19 +40,23 @@ const imageUpload = async (req,res) => {
         if(!image){
           const promise = await s3.upload(params).promise();
           if(promise){
-              let uploadData = {
-                  file_name : promise.Key,
-                  url : promise.Location,
-                  userID: user.dataValues.UserId
-              }
-              const prom = await imageService.uploadService(uploadData);
-              if(prom){
-                promiseHandler.handlePromise(res,"Image updated for the user successfully");
-                logs.success("Image updated for the user successfully");
-              }else{
-                promiseHandler.handleFailure(res,404,"Error adding image files")
-                logs.error("Error adding image files");
-              }
+            metrics.timing("Image.POST.S3NewUserImage",s3Time);  
+            let uploadData = {
+                file_name : promise.Key,
+                url : promise.Location,
+                userID: user.dataValues.UserId
+            }
+            const prom = await imageService.uploadService(uploadData);
+            if(prom){
+              metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
+              promiseHandler.handlePromise(res,"Image updated for the user successfully");
+              metrics.timing("Image.POST.newUserImage",timer);
+              logs.success("Image updated for the user successfully");
+
+            }else{
+              promiseHandler.handleFailure(res,404,"Error adding image files")
+              logs.error("Error adding image files");
+            }
           }else{
             promiseHandler.handleFailure(res,400,"Error adding image files") 
             logs.error("Error adding image files")           
@@ -60,8 +70,10 @@ const imageUpload = async (req,res) => {
               promiseHandler.handleError(err,res);
             }
             else{
+              metrics.timing("Image.DELETE.S3DeleteToCreateUserImage",s3Time);
               const promise = await s3.upload(params).promise();
               if(promise){
+                metrics.timing("Image.POST.S3NewUserImage",s3Time);
                 let uploadData = {
                   file_name : promise.Key,
                   url : promise.Location,
@@ -69,7 +81,9 @@ const imageUpload = async (req,res) => {
                 }
                 const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
                 if(prom1){
+                  metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
                   promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom1);
+                  metrics.timing("Image.POST.newUserImage",timer);
                   logs.success("Image added to the bucket successfully")
                 }else{
                   promiseHandler.handleFailure(res,404,"Error adding image files")
@@ -98,6 +112,10 @@ const imageUpload = async (req,res) => {
 }
 
 const getImage = async (req,res) =>{
+  const timer = new Date();
+  const databaseTime = new Date();
+  metrics.increment("Image.GET.getUserImage");
+
   //get base64 token
   const authorization = req.headers.authorization
 
@@ -114,6 +132,7 @@ const getImage = async (req,res) =>{
           if(passwordValidation){
             const image = await imageService.getImage(user.dataValues.UserId);
             if(image){
+              metrics.timing("User.GET.databaseGetUser",databaseTime);
               const params = {
                 file_name : image.dataValues.file_name,
                 id: image.dataValues.id,
@@ -122,6 +141,7 @@ const getImage = async (req,res) =>{
                 userId: image.dataValues.userID
               }
               promiseHandler.handleSuccess(res,200,"Image data found for user",params)
+              metrics.increment("Image.GET.getUserImage",timer);
               logs.success("Image data found for user")
             }
             else{
