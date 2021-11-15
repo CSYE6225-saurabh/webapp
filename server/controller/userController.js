@@ -5,6 +5,7 @@ const promiseHandler = require('../utils/promiseHandler');
 const validateInput = require('../utils/validation');
 const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
+
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
