@@ -7,7 +7,6 @@ then
 else
     sudo mkdir -p logs
     sudo touch logs/webapp.log
-    sudo chmod 666 logs/webapp.log
 fi
 
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
