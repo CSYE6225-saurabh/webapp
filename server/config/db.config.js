@@ -10,7 +10,8 @@ module.exports = {
     dialect : 'mysql',
     s3: temp.s3
   };
-  
+
+
 // module.exports = {
 //   HOST: "localhost",
 //   USER: "root",
