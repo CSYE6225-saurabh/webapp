@@ -48,7 +48,7 @@ const imageUpload = async (req,res) => {
             const prom = await imageService.uploadService(uploadData);
             if(prom){
               metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
-              promiseHandler.handleSuccess(res,200."Image added for the user", prom)
+              promiseHandler.handleSuccess(res,200,"Image added for the user", prom)
               metrics.timing("Image.POST.newUserImage",timer);
               logs.success("Image updated for the user successfully");
 
