@@ -48,7 +48,7 @@ const imageUpload = async (req,res) => {
             const prom = await imageService.uploadService(uploadData);
             if(prom){
               metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
-              promiseHandler.handlePromise(res,"Image updated for the user successfully");
+              promiseHandler.handleSuccess(res,200."Image added for the user", prom)
               metrics.timing("Image.POST.newUserImage",timer);
               logs.success("Image updated for the user successfully");
 
@@ -81,7 +81,7 @@ const imageUpload = async (req,res) => {
                 const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
                 if(prom1){
                   metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
-                  promiseHandler.handleSuccess(res,200,"Image added to the bucket successfully",prom1);
+                  promiseHandler.handlePromise(res,"Image updated successfully")
                   metrics.timing("Image.POST.newUserImage",timer);
                   logs.success("Image added to the bucket successfully")
                 }else{
