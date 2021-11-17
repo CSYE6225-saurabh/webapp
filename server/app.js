@@ -25,6 +25,7 @@ app.use(cors("*"));
 app.use(express.json());
 
 // calling routes
+
 routes(app);
 
 //server connection
