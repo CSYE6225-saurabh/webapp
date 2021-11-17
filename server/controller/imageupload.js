@@ -164,6 +164,10 @@ const getImage = async (req,res) =>{
 }
 const deleteImage = async (req, res) => {
   //get base64 token
+  const timer = new Date();
+  const databaseTime = new Date();
+  const s3Time = new Date();
+  metrics.increment("Image.DELETE.deleteUserImage");
   const authorization = req.headers.authorization
 
   //validate token value
@@ -192,9 +196,12 @@ const deleteImage = async (req, res) => {
                       promiseHandler.handleError(err,res);
                     }
                     else{
+                      metrics.timing("Image.DELETE.S3DeleteUserImage");
                       const promImDel =imageService.deleteImage(params.id);
                       if(promImDel){
+                        metrics.timing("Image.DELETE.databaseDeleteUserImage");
                         promiseHandler.handlePromise(res,200);
+                        metrics.timing("Image.DELETE.deleteUserImage");
                         logs.success("Image deleted successfully")
                       }else{
                         promiseHandler.handleFailure(res,400,"Error deleting image")
