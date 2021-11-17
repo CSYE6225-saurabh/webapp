@@ -108,3 +108,7 @@ dist
 
 # production
 /build
+
+
+# locust cache
+__pycache__
