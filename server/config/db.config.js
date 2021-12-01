@@ -11,7 +11,7 @@ module.exports = {
     dialect : 'mysql',
     s3: temp.s3,
     port: temp.port,
-    topicArn : "arn:aws:lambda:us-east-1:970904211705:function:lambda_function_name"
+    topicArn : "arn:aws:sns:us-east-1:970904211705:EmailNotificationRecipeEndpoint"
   };
 
 
