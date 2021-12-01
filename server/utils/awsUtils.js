@@ -1,12 +1,9 @@
 const aws = require('aws-sdk');
 const logs = require('./logs')
-aws.config.update({
-    region: "us-east-1"
-});
+const docClient = new aws.DynamoDB.DocumentClient({ profile: 'prod', region: "us-east-1" });
 const conn = require('../config/db.config');
-const docClient = new aws.DynamoDB.DocumentClient()
-const snsClient = new aws.SNS()
-const TTL_DELTA = 60 * 60 * 24 * 7
+const snsClient = new aws.SNS({ apiVersion: "2010-03-31" })
+const TTL_DELTA = 60 * 5
 const addItemToDynamoDB = (res,userName,token) => {
     const params = {
         TableName: "csye6225-dynamodb",

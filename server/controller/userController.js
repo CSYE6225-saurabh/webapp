@@ -7,10 +7,8 @@ const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
 const awsUtil = require('../utils/awsUtils');
 const aws = require('aws-sdk');
-aws.config.update({
-    region: "us-east-1"
-});
-var docClient = new aws.DynamoDB.DocumentClient();
+const docClient = new aws.DynamoDB.DocumentClient({ profile: 'prod', region: "us-east-1" });
+const credentials = new aws.SharedIniFileCredentials({profile: 'prod'});
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
@@ -209,7 +207,7 @@ const editUser = async (req, res) => {
         }
     }
 }
-
+s
 // check if the token is present in Dynamo db for the user
 const verifyUser = (req, res) => {
     const {email,token} = req.query
@@ -225,12 +223,30 @@ const verifyUser = (req, res) => {
         if(err){
             promiseHandler.handleError(err,res)
         }else{
-            userService.changeVerificationStatus(email)
-            .then(()=>{
-                promiseHandler.handlePromise("Verified",200)
-            }).catch((err)=>{
-                promiseHandler.handleError(err,res)
-            })
+            let isTokenValid = false;
+            console.log("Checking if record already present in DB!!");
+            if (data.Item == null || record.Item == undefined) {
+                log.error("No record in Dynamo ");
+                isTokenValid = false;
+            } else {
+                if(data.Item.ttl < Math.floor(Date.now() / 1000)) {
+                    log.error("ttl expired ");
+                    isTokenValid = false;
+                } else {
+                    log.success("TTL record valid ");
+                    isTokenValid = true;
+                }
+            }if(isTokenValid){
+                userService.changeVerificationStatus(email)
+                .then(()=>{
+                    promiseHandler.handlePromise("Verified",200)
+                }).catch((err)=>{
+                    promiseHandler.handleError(err,res)
+                })
+            }else{
+                promiseHandler.handleFailure(res,400,"TTL Validation failed. Cannot approve usersssss")
+            }
+
         }
     })
 }  
