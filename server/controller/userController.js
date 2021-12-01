@@ -62,7 +62,8 @@ const saveUser = async (req,res) => {
                         Account_Updated: newUser.Account_Updated
                     }
                     const newToken = passwordEncrypt.generateTokenHash(data.UserName);
-                    const dynamoRes = awsUtil.addItemToDynamoDB(data.UserName,newToken);                    
+                    const dynamoRes = awsUtil.addItemToDynamoDB(data.UserName,newToken);
+                    log.success(dynamoRes)                    
                     promiseHandler.handleSuccess(res,201,"User created successfully",data)
                     metrics.timing("User.POST.newUser",timer);
                     log.success(`User created: ${newUser.UserId}`)
@@ -232,7 +233,7 @@ const verifyUser = (req, res) => {
             })
         }
     })
-}
+}  
 
 module.exports = {
     saveUser, 

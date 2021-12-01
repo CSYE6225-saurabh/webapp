@@ -1,4 +1,5 @@
 const aws = require('aws-sdk');
+const logs = require('./logs')
 aws.config.update({
     region: "us-east-1"
 });
@@ -18,8 +19,10 @@ const addItemToDynamoDB = (res,userName,token) => {
     docClient.put(params,(err,resp) => {
         if (err) {
             console.error(err)
+            logs.error(err)
         }
         else{
+            logs.success(resp)
             const paramSNS = {
                 "message-type": "email",
                 "email":userName,
@@ -31,8 +34,11 @@ const addItemToDynamoDB = (res,userName,token) => {
             }
             snsClient.publish(data,(er,pay)=>{
                 if (er) {
+                    logs.error(er)
                     return {er,err,status:400}
+                    
                 }else{
+                    logs.success(pay)
                     return {pay,resp,status:200}
                 }
             })
