@@ -9,8 +9,14 @@ const sqlze = new Sequelize(
   connection.PASSWORD,
   {
     dialect: connection.dialect,
-    host: connection.HOST,
+    replication: {
+      read:[
+        {host: connection.HOSTREADREPLICA}
+      ],
+      write: {
+        host: connection.HOST
+      }
+    }
   },
-
 )
 module.exports = sqlze;

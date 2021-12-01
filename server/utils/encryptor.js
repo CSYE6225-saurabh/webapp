@@ -14,8 +14,17 @@ const authenticate = (password, hash) => {
     return isAuthenticated;
 }
 
+const generateTokenHash = (userName) => {
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(userName, salt);
+    return hashedPassword;
+}
 
+const validateTokenHash = (userName,token) => {
+    const isAuthenticated = bcrypt.compareSync(userName, token);
+    return isAuthenticated;
+}
 
 module.exports = {
-    encryptPassword, authenticate
+    encryptPassword, authenticate, generateTokenHash, validateTokenHash
 }

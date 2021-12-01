@@ -27,6 +27,14 @@ const User = dbConnect.define('User',{
         type: Sequelize.STRING,
         allowNull: false,
     },
+    Verified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+    },
+    VerifiedOn:{
+        type:Sequelize.DATE
+    }
+
 },{
     timestamp: true,
     updatedAt : 'Account_Updated',

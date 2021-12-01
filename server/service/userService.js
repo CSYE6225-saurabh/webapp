@@ -22,8 +22,13 @@ const updateUser = (userName,Password,FirstName,LastName) => {
     return User.update(updateParams,{where: {UserName:userName}});
 }
 
+const changeVerificationStatus = (userName) => {
+    const timestamp = Date.now();
+    return User.update({Verified: true, VerifiedOn: timestamp},{where: {UserName:userName}})
+}
 module.exports = {
     newUser,
     findUserByUserName, 
-    updateUser
+    updateUser,
+    changeVerificationStatus
 }

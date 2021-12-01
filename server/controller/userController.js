@@ -1,11 +1,12 @@
 const userService = require('../service/userService');
 const passwordEncrypt = require('../utils/encryptor');
-const validateToken = require('../utils/token');
+const token = require('../utils/token');
 const promiseHandler = require('../utils/promiseHandler');
 const validateInput = require('../utils/validation');
 const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
-
+const awsUtil = require('../utils/awsUtils');
+const aws = require('aws-sdk');
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
@@ -56,6 +57,8 @@ const saveUser = async (req,res) => {
                         Account_Created: newUser.Account_Created,
                         Account_Updated: newUser.Account_Updated
                     }
+                    const newToken = passwordEncrypt.generateTokenHash(data.UserName);
+                    const dynamoRes = awsUtil.addItemToDynamoDB(data.UserName,newToken);                    
                     promiseHandler.handleSuccess(res,201,"User created successfully",data)
                     metrics.timing("User.POST.newUser",timer);
                     log.success(`User created: ${newUser.UserId}`)
@@ -63,6 +66,8 @@ const saveUser = async (req,res) => {
                     promiseHandler.handleError(err,res)
                     log.error("Error creating user")
                 })
+
+
             }
         }
         else{
@@ -79,9 +84,9 @@ const getUser = async (req, res) => {
     metrics.increment("User.GET.getUser");
     //get base64 token
     const authorization = req.headers.authorization
-
+    
     //validate token value
-    const [Username, Password] = validateToken(authorization)
+    const [Username, Password] = token.validateToken(authorization)
     if(!Username || !Password){
         promiseHandler.handleFailure(res,401,"Credentials missing")
         log.error("Credentials missing")
@@ -90,25 +95,31 @@ const getUser = async (req, res) => {
         const user = await userService.findUserByUserName(Username);
         if (user){
             // validate password
-            const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
-            if(passwordValidation){
-                metrics.timing("User.GET.databaseGetUser",databaseTime);
-                const data = {
-                    UserId : user.dataValues.UserId,
-                    FirstName : user.dataValues.FirstName,
-                    LastName : user.dataValues.LastName,
-                    UserName : user.dataValues.UserName, 
-                    Account_Created : user.dataValues.Account_Created,
-                    Account_Updated : user.dataValues.Account_Updated
+            if(user.dataValues.VerificationStatus){
+                const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
+                if(passwordValidation){
+                    metrics.timing("User.GET.databaseGetUser",databaseTime);
+                    const data = {
+                        UserId : user.dataValues.UserId,
+                        FirstName : user.dataValues.FirstName,
+                        LastName : user.dataValues.LastName,
+                        UserName : user.dataValues.UserName, 
+                        Account_Created : user.dataValues.Account_Created,
+                        Account_Updated : user.dataValues.Account_Updated
+                    }
+                    promiseHandler.handleSuccess(res,200,"User details found successfully",data)
+                    metrics.timing("User.GET.getUser",timer);
+                    log.success("User details found successfully")
                 }
-                promiseHandler.handleSuccess(res,200,"User details found successfully",data)
-                metrics.timing("User.GET.getUser",timer);
-                log.success("User details found successfully")
+                else{
+                    promiseHandler.handleFailure(res,401,"User Authentication Failed")
+                    log.error("User Authentication Failed");
+                }
+            }else{
+                promiseHandler.handleFailure(res,401,"User is not verified")
+                log.error("User verification failed")
             }
-            else{
-                promiseHandler.handleFailure(res,401,"User Authentication Failed")
-                log.error("User Authentication Failed");
-            }
+
         }
         else{
             promiseHandler.handleFailure(res,404,"User Not Found")
@@ -126,7 +137,7 @@ const editUser = async (req, res) => {
     metrics.increment("User.PUT.updateUser");
     // get base64 token
     const authorization = req.headers.authorization
-    const [Username, Password] = validateToken(authorization);
+    const [Username, Password] = token.validateToken(authorization);
     if(!Username || !Password){
         promiseHandler.handleFailure(res,401,"Credentials missing")
         log.error("Credentials missing")
@@ -148,30 +159,35 @@ const editUser = async (req, res) => {
         if(validateInput.validate('userName',Username) && validateInput.validate('password',Password)){
             if(validateInput.validate('firstName',firstName) && validateInput.validate('lastName',lastName) && validateInput.validate('password',password)){
                 if(user){
-                    const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
-                    if(passwordValidation){
+                    if(user.dataValues.VerificationStatus){
+                        const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
+                        if(passwordValidation){
 
-                        // replaces missing fields in request with existing values
-                        firstName = firstName?firstName: user.dataValues.FirstName
-                        lastName = lastName?lastName:user.dataValues.LastName
-                        password = password?password: Password
+                            // replaces missing fields in request with existing values
+                            firstName = firstName?firstName: user.dataValues.FirstName
+                            lastName = lastName?lastName:user.dataValues.LastName
+                            password = password?password: Password
 
-                        // encrypt password using bcrypt
-                        hashedPassword = passwordEncrypt.encryptPassword(password)
-                        userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
-                        .then(() => {
-                            metrics.timing("User.PUT.databaseUpdateUser",databaseTime);
-                            promiseHandler.handlePromise(res,200);
-                            metrics.timing("User.PUT.updateUser",timer);
-                            log.success("User updated successfully")        
-                        }).catch(err=>{
-                            promiseHandler.handleError(err,res);
-                            log.error("Error updating user")
-                        })
-                    }
-                    else{
-                        promiseHandler.handleFailure(res,401,"Authorization Failed")
-                        log.error("Authentication Failed")
+                            // encrypt password using bcrypt
+                            hashedPassword = passwordEncrypt.encryptPassword(password)
+                            userService.updateUser(user.dataValues.UserName, hashedPassword, firstName, lastName)
+                            .then(() => {
+                                metrics.timing("User.PUT.databaseUpdateUser",databaseTime);
+                                promiseHandler.handlePromise(res,200);
+                                metrics.timing("User.PUT.updateUser",timer);
+                                log.success("User updated successfully")        
+                            }).catch(err=>{
+                                promiseHandler.handleError(err,res);
+                                log.error("Error updating user")
+                            })
+                        }
+                        else{
+                            promiseHandler.handleFailure(res,401,"Authorization Failed")
+                            log.error("Authentication Failed")
+                        }
+                    }else{
+                        promiseHandler.handleFailure(res,401,"User is not verified")
+                        log.error("User verification failed")
                     }
                 }
                 else{
@@ -189,9 +205,27 @@ const editUser = async (req, res) => {
     }
 }
 
+// check if the token is present in Dynamo db for the user
+const verifyUser = (req, res) => {
+    const {email,token} = req.query
+    //write validate token function in dynamodb utils to compare values from dynamo db and query parameters
+
+    if(validateToken){
+        userService.changeVerificationStatus(email)
+        .then(()=>{
+            promiseHandler.handlePromise("Verified",200)
+        }).catch((err)=>{
+            promiseHandler.handleError(err,res)
+        })
+    }else{
+        promiseHandler.handleFailure(res,400,"Validation failed")
+    }
+
+}
 
 module.exports = {
     saveUser, 
     getUser, 
-    editUser
+    editUser,
+    verifyUser
 }
