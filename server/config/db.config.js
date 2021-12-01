@@ -4,14 +4,14 @@ const data = fs.readFileSync("/home/ubuntu/server/config.json");
 const temp = JSON.parse(data);
 module.exports = {
     HOST: temp.host.split(":")[0],
-    HOSTREADREPLICA: temp.hostRdsReadReplica.split(";")[0],
+    HOSTREADREPLICA: "replica.cprdck0ambbc.us-east-1.rds.amazonaws.com",
     USER: temp.username,
     PASSWORD: temp.password,
     DB: temp.database,
     dialect : 'mysql',
     s3: temp.s3,
     port: temp.port,
-    topicArn : temp.topicArn
+    topicArn : "arn:aws:lambda:us-east-1:970904211705:function:lambda_function_name"
   };
 
 
