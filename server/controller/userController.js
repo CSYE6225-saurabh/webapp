@@ -7,6 +7,7 @@ const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
 const awsUtil = require('../utils/awsUtils');
 const aws = require('aws-sdk');
+var docClient = new aws.DynamoDB.DocumentClient();
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
@@ -209,18 +210,25 @@ const editUser = async (req, res) => {
 const verifyUser = (req, res) => {
     const {email,token} = req.query
     //write validate token function in dynamodb utils to compare values from dynamo db and query parameters
-
-    if(validateToken){
-        userService.changeVerificationStatus(email)
-        .then(()=>{
-            promiseHandler.handlePromise("Verified",200)
-        }).catch((err)=>{
+    var params = {
+        TableName: "csye6225-dynamodb",
+        Key:{
+            "email":email,
+            "token":token
+        }
+    };
+    docClient.get(params,(err, resp) => {
+        if(err){
             promiseHandler.handleError(err,res)
-        })
-    }else{
-        promiseHandler.handleFailure(res,400,"Validation failed")
-    }
-
+        }else{
+            userService.changeVerificationStatus(email)
+            .then(()=>{
+                promiseHandler.handlePromise("Verified",200)
+            }).catch((err)=>{
+                promiseHandler.handleError(err,res)
+            })
+        }
+    })
 }
 
 module.exports = {
