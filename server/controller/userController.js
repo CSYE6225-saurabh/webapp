@@ -7,6 +7,9 @@ const metrics = require('../utils/metrics');
 const log = require('../utils/logs');
 const awsUtil = require('../utils/awsUtils');
 const aws = require('aws-sdk');
+aws.config.update({
+    region: "us-east-1"
+});
 var docClient = new aws.DynamoDB.DocumentClient();
 //Create new user
 const saveUser = async (req,res) => {
