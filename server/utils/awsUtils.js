@@ -1,4 +1,7 @@
 const aws = require('aws-sdk');
+aws.config.update({
+    region: "us-east-1"
+});
 const conn = require('../config/db.config');
 const docClient = new aws.DynamoDB.DocumentClient()
 const snsClient = new aws.SNS()
