@@ -277,7 +277,7 @@ const verifyUser = (req, res) => {
                 log.error("No record in Dynamo ");
                 isTokenValid = false;
             } else {
-                if(data.Item.TimeToExist < Math.floor(Date.now() / 1000)) {
+                if(resp.Item.TimeToExist < Math.floor(Date.now() / 1000)) {
                     log.error("ttl expired ");
                     isTokenValid = false;
                 } else {
