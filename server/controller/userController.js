@@ -258,8 +258,8 @@ const verifyUser = (req, res) => {
     var params = {
         TableName: "csye6225-dynamodb",
         Key:{
-            "email":email,
-            "token":token
+            "UserName":email,
+            "Token":token
         }
     };
     docClient.get(params,(err, resp) => {
