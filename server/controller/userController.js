@@ -64,7 +64,7 @@ const saveUser = async (req,res) => {
                     }
                     const newToken = passwordEncrypt.generateTokenHash(data.UserName);
                     const params = {
-                        TableName: "csye6225-dynamodb",
+                        TableName: "csye6225-dynamo",
                         Item: { 
                             UserName: data.UserName,
                             Token: newToken
