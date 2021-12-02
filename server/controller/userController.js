@@ -74,10 +74,11 @@ const saveUser = async (req,res) => {
                     docClient.put(params,(err,resp) => {
                         if (err) {
                             console.error(err)
-                            logs.error(err)
+                            log.error(err)
                         }
                         else{
-                            logs.success(resp)
+                            
+                            log.success(resp)
                             const paramSNS = {
                                 "message-type": "email",
                                 "email":userName,
@@ -89,11 +90,11 @@ const saveUser = async (req,res) => {
                             }
                             snsClient.publish(data,(er,pay)=>{
                                 if (er) {
-                                    logs.error(er)
+                                    log.error(er)
                                     return {er,err,status:400}
                                     
                                 }else{
-                                    logs.success(pay)
+                                    log.success(pay)
                                     return {pay,resp,status:200}
                                 }
                             })
