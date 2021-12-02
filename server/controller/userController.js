@@ -69,9 +69,10 @@ const saveUser = async (req,res) => {
                         TableName: "csye6225-dynamo",
                         Item: { 
                             UserName: data.UserName,
-                            Token: newToken
-                        },
-                        ttl: { N: (Math.floor(+new Date() / 1000) + TTL_DELTA).toString() }
+                            Token: newToken,
+                            TimeToExist: Math.floor(+new Date() / 1000) + TTL_DELTA).toString()
+                        }
+                        // ttl: { N: (Math.floor(+new Date() / 1000) + TTL_DELTA).toString() }
                     }
                     docClient.put(params,(err,resp) => {
                         if (err) {
@@ -269,13 +270,14 @@ const verifyUser = (req, res) => {
             promiseHandler.handleError(err,res)
         }else{
             let isTokenValid = false;
+            console.log(resp)
             console.log("Checking if record already present in DB!!");
-            if (data.Item == null || record.Item == undefined) {
+            if (resp.Item == null || resp.Item == undefined) {
                 console.log("data not found")
                 log.error("No record in Dynamo ");
                 isTokenValid = false;
             } else {
-                if(data.Item.ttl < Math.floor(Date.now() / 1000)) {
+                if(data.Item.TimeToExist < Math.floor(Date.now() / 1000)) {
                     log.error("ttl expired ");
                     isTokenValid = false;
                 } else {
