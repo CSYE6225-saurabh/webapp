@@ -88,12 +88,15 @@ const saveUser = async (req,res) => {
                                 Message: JSON.stringify(paramSNS),
                                 TopicArn: conn.topicArn
                             }
+                            console.log(data.TopicArn)
                             snsClient.publish(data,(er,pay)=>{
                                 if (er) {
+                                    console.error(er)
                                     log.error(er)
                                     return {er,err,status:400}
                                     
                                 }else{
+                                    console.log(pay)
                                     log.success(pay)
                                     return {pay,resp,status:200}
                                 }
