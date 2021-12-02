@@ -142,7 +142,7 @@ const getUser = async (req, res) => {
         const user = await userService.findUserByUserName(Username);
         if (user){
             // validate password
-            if(user.dataValues.VerificationStatus){
+            if(user.dataValues.Verified){
                 const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
                 if(passwordValidation){
                     metrics.timing("User.GET.databaseGetUser",databaseTime);
@@ -152,7 +152,9 @@ const getUser = async (req, res) => {
                         LastName : user.dataValues.LastName,
                         UserName : user.dataValues.UserName, 
                         Account_Created : user.dataValues.Account_Created,
-                        Account_Updated : user.dataValues.Account_Updated
+                        Account_Updated : user.dataValues.Account_Updated,
+                        Verified : user.dataValues.Verified,
+                        VerifiedOn : user.dataValues.VerifiedOn
                     }
                     promiseHandler.handleSuccess(res,200,"User details found successfully",data)
                     metrics.timing("User.GET.getUser",timer);
@@ -206,7 +208,7 @@ const editUser = async (req, res) => {
         if(validateInput.validate('userName',Username) && validateInput.validate('password',Password)){
             if(validateInput.validate('firstName',firstName) && validateInput.validate('lastName',lastName) && validateInput.validate('password',password)){
                 if(user){
-                    if(user.dataValues.VerificationStatus){
+                    if(user.dataValues.Verified){
                         const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
                         if(passwordValidation){
 
