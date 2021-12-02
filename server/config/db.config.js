@@ -8,10 +8,10 @@ module.exports = {
     USER: temp.username,
     PASSWORD: temp.password,
     DB: temp.database,
-    dialect : 'mysql',
+    dialect : temp.hostReadReplics.split(":")[0],
     s3: temp.s3,
     port: temp.port,
-    topicArn : "arn:aws:sns:us-east-1:970904211705:EmailNotificationRecipeEndpoint"
+    topicArn : temp.topic_arn
   };
 
 
