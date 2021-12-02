@@ -12,6 +12,7 @@ const credentials = new aws.SharedIniFileCredentials({profile: 'prod'});
 const snsClient = new aws.SNS({profile: 'prod', region: "us-east-1", apiVersion: "2010-03-31" })
 const TTL_DELTA = 60 * 5
 const conn = require('../config/db.config')
+const Str = require('@supercharge/strings')
 //Create new user
 const saveUser = async (req,res) => {
     const { userName, password, firstName, lastName} = req.body;
@@ -62,7 +63,7 @@ const saveUser = async (req,res) => {
                         Account_Created: newUser.Account_Created,
                         Account_Updated: newUser.Account_Updated
                     }
-                    const newToken = passwordEncrypt.generateTokenHash(data.UserName);
+                    const newToken = Str.random(20);
                     const params = {
                         TableName: "csye6225-dynamo",
                         Item: { 
@@ -88,6 +89,7 @@ const saveUser = async (req,res) => {
                                 Message: JSON.stringify(paramSNS),
                                 TopicArn: conn.topicArn
                             }
+                            console.log(data.token)
                             console.log(data.TopicArn)
                             snsClient.publish(data,(er,pay)=>{
                                 if (er) {
