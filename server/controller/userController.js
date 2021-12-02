@@ -9,7 +9,7 @@ const awsUtil = require('../utils/awsUtils');
 const aws = require('aws-sdk');
 const docClient = new aws.DynamoDB.DocumentClient({ profile: 'prod', region: "us-east-1" });
 const credentials = new aws.SharedIniFileCredentials({profile: 'prod'});
-const snsClient = new aws.SNS({ apiVersion: "2010-03-31" })
+const snsClient = new aws.SNS({profile: 'prod', region: "us-east-1", apiVersion: "2010-03-31" })
 const TTL_DELTA = 60 * 5
 const conn = require('../config/db.config')
 //Create new user
