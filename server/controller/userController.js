@@ -291,9 +291,9 @@ const verifyUser = (req, res) => {
             if(isTokenValid){
                 userService.changeVerificationStatus(email)
                 .then(()=>{
-                    promiseHandler.handlePromise("Verified",200)
+                    res.send(200)
                 }).catch((err)=>{
-                    promiseHandler.handleError(err,res)
+                    res.send(400)
                 })
             }else{
                 promiseHandler.handleFailure(res,400,"TTL Validation failed. Cannot approve usersssss")
