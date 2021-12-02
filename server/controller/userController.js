@@ -82,7 +82,7 @@ const saveUser = async (req,res) => {
                             const paramSNS = {
                                 "message-type": "email",
                                 "email":userName,
-                                "token":token
+                                "token":newToken
                             }
                             const data = {
                                 Message: JSON.stringify(paramSNS),
@@ -93,12 +93,9 @@ const saveUser = async (req,res) => {
                                 if (er) {
                                     console.error(er)
                                     log.error(er)
-                                    return {er,err,status:400}
-                                    
                                 }else{
                                     console.log(pay)
                                     log.success(pay)
-                                    return {pay,resp,status:200}
                                 }
                             })
                         }
