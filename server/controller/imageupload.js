@@ -26,83 +26,88 @@ const imageUpload = async (req,res) => {
   else if(validateInput.validate('userName',Username) && validateInput.validate('password',Password) && validateInput.compare3(fileType)){
     const user = await userService.findUserByUserName(Username);
     if(user){
-      const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
-      if(passwordValidation){
-        const params = {
-          Bucket : connection.s3,
-          Key : `${user.dataValues.UserId}-profile-picture.${fileType}`,
-          Body : bufferedImage,
-          ContentEncoding : 'base64',
-          ContentType : fileType
-        }       
-        const image =await imageService.getImage(user.dataValues.UserId);
-        if(!image){
-          const promise = await s3.upload(params).promise();
-          if(promise){
-            metrics.timing("Image.POST.S3NewUserImage",s3Time);  
-            let uploadData = {
-                file_name : promise.Key,
-                url : promise.Location,
-                userID: user.dataValues.UserId
-            }
-            const prom = await imageService.uploadService(uploadData);
-            if(prom){
-              metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
-              promiseHandler.handleSuccess(res,200,"Image added for the user", prom)
-              metrics.timing("Image.POST.newUserImage",timer);
-              logs.success("Image updated for the user successfully");
-
-            }else{
-              promiseHandler.handleFailure(res,404,"Error adding image files")
-              logs.error("Error adding image files");
-            }
-          }else{
-            promiseHandler.handleFailure(res,400,"Error adding image files") 
-            logs.error("Error adding image files")           
-          }
-        }else{
-          s3.deleteObject({
-            Bucket : params.Bucket,
-            Key : params.Key
-          },async (err,data)=>{
-            if(err){
-              promiseHandler.handleError(err,res);
-            }
-            else{
-              metrics.timing("Image.DELETE.S3DeleteToCreateUserImage",s3Time);
-              const promise = await s3.upload(params).promise();
-              if(promise){
-                metrics.timing("Image.POST.S3NewUserImage",s3Time);
-                let uploadData = {
+      if(user.dataValues.Verified){
+        const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
+        if(passwordValidation){
+          const params = {
+            Bucket : connection.s3,
+            Key : `${user.dataValues.UserId}-profile-picture.${fileType}`,
+            Body : bufferedImage,
+            ContentEncoding : 'base64',
+            ContentType : fileType
+          }       
+          const image =await imageService.getImage(user.dataValues.UserId);
+          if(!image){
+            const promise = await s3.upload(params).promise();
+            if(promise){
+              metrics.timing("Image.POST.S3NewUserImage",s3Time);  
+              let uploadData = {
                   file_name : promise.Key,
                   url : promise.Location,
                   userID: user.dataValues.UserId
-                }
-                const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
-                if(prom1){
-                  metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
-                  promiseHandler.handlePromise(res,"Image updated successfully")
-                  metrics.timing("Image.POST.newUserImage",timer);
-                  logs.success("Image added to the bucket successfully")
+              }
+              const prom = await imageService.uploadService(uploadData);
+              if(prom){
+                metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
+                promiseHandler.handleSuccess(res,200,"Image added for the user", prom)
+                metrics.timing("Image.POST.newUserImage",timer);
+                logs.success("Image updated for the user successfully");
+
+              }else{
+                promiseHandler.handleFailure(res,404,"Error adding image files")
+                logs.error("Error adding image files");
+              }
+            }else{
+              promiseHandler.handleFailure(res,400,"Error adding image files") 
+              logs.error("Error adding image files")           
+            }
+          }else{
+            s3.deleteObject({
+              Bucket : params.Bucket,
+              Key : params.Key
+            },async (err,data)=>{
+              if(err){
+                promiseHandler.handleError(err,res);
+              }
+              else{
+                metrics.timing("Image.DELETE.S3DeleteToCreateUserImage",s3Time);
+                const promise = await s3.upload(params).promise();
+                if(promise){
+                  metrics.timing("Image.POST.S3NewUserImage",s3Time);
+                  let uploadData = {
+                    file_name : promise.Key,
+                    url : promise.Location,
+                    userID: user.dataValues.UserId
+                  }
+                  const prom1 = await imageService.updateImage(uploadData, user.dataValues.UserId);
+                  if(prom1){
+                    metrics.timing("Image.POST.databaseNewUserImage",databaseTime);
+                    promiseHandler.handlePromise(res,"Image updated successfully")
+                    metrics.timing("Image.POST.newUserImage",timer);
+                    logs.success("Image added to the bucket successfully")
+                  }else{
+                    promiseHandler.handleFailure(res,404,"Error adding image files")
+                    logs.error("Error adding image files")
+                  } 
                 }else{
                   promiseHandler.handleFailure(res,404,"Error adding image files")
                   logs.error("Error adding image files")
-                } 
-              }else{
-                promiseHandler.handleFailure(res,404,"Error adding image files")
-                logs.error("Error adding image files")
+                }
               }
-            }
-          })          
+            })          
+          }
+        }else{
+          promiseHandler.handleFailure(res,401,"User Authentication Failed")
+          logs.error("User Authentication Failed")
         }
       }else{
-        promiseHandler.handleFailure(res,401,"User Authentication Failed")
-        logs.error("User Authentication Failed")
+        promiseHandler.handleFailure(res,404,"User Not Verified")
+        logs.error("User Not Verified")
       }
     }else{
       promiseHandler.handleFailure(res,404,"User Not Found")
-      logs.error("User Not Found")
-    }  
+      logs.error("User Not Found")    
+    } 
   }
   else{
     promiseHandler.handleFailure(res,400,"Input fields are not valid");
@@ -127,6 +132,7 @@ const getImage = async (req,res) =>{
       const user = await userService.findUserByUserName(Username);
       if (user){
           // validate password
+        if(user.dataValues.Verified){  
           const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
           if(passwordValidation){
             const image = await imageService.getImage(user.dataValues.UserId);
@@ -154,9 +160,14 @@ const getImage = async (req,res) =>{
           }
       }
       else{
-          promiseHandler.handleFailure(res,404,"User Not Found")
-          logs.error("User Not Found")
+        promiseHandler.handleFailure(res,404,"User Not Verified")
+        logs.error("User Not Verified")       
       }
+    }
+    else{
+        promiseHandler.handleFailure(res,404,"User Not Found")
+        logs.error("User Not Found")
+    }
   }else{
       promiseHandler.handleFailure(res,400,"Input fields are not valid");
       logs.error("Input fields are not valid")
@@ -178,6 +189,7 @@ const deleteImage = async (req, res) => {
   else if(validateInput.validate('userName',Username) && validateInput.validate('password',Password)){
       const user = await userService.findUserByUserName(Username);
       if (user){
+        if(user.dataValues.Verified){
           // validate password
           const passwordValidation = passwordEncrypt.authenticate(Password,user.dataValues.Password)
           if(passwordValidation){
@@ -221,9 +233,14 @@ const deleteImage = async (req, res) => {
           }
       }
       else{
-          promiseHandler.handleFailure(res,404,"User Not Found")
-          logs.error("User Not Found")
+        promiseHandler.handleFailure(res,404,"User Not Verified")
+        logs.error("User Not Verified")
       }
+    }
+    else{
+        promiseHandler.handleFailure(res,404,"User Not Found")
+        logs.error("User Not Found")
+    }
   }else{
       promiseHandler.handleFailure(res,400,"Input fields are not valid");
       logs.error("Input fields are not valid")
