@@ -82,7 +82,7 @@ const saveUser = async (req,res) => {
                             const paramSNS = {
                                 "message-type": "email",
                                 "email":userName,
-                                "token":token
+                                "token":newToken
                             }
                             const data = {
                                 Message: JSON.stringify(paramSNS),
