@@ -70,7 +70,7 @@ const saveUser = async (req,res) => {
                         Item: { 
                             UserName: data.UserName,
                             Token: newToken,
-                            TimeToExist: Math.floor(+new Date() / 1000) + TTL_DELTA).toString()
+                            TimeToExist: (Math.floor(+new Date() / 1000) + TTL_DELTA).toString()
                         }
                         // ttl: { N: (Math.floor(+new Date() / 1000) + TTL_DELTA).toString() }
                     }
