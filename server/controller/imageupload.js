@@ -19,7 +19,7 @@ const imageUpload = async (req,res) => {
   var bufferedImage = new Buffer(req.body.toString("binary"),"base64");
   const fileType = req.headers['content-type'].split('/')[1];
   //validate token value
-  const [Username, Password] = validateToken(authorization)
+  const [Username, Password] = validateToken.validateToken(authorization)
   if(!Username || !Password){
     promiseHandler.handleFailure(res,401,"Credentials missing")
   } 
@@ -124,7 +124,7 @@ const getImage = async (req,res) =>{
   const authorization = req.headers.authorization
 
   //validate token value
-  const [Username, Password] = validateToken(authorization)
+  const [Username, Password] = validateToken.validateToken(authorization)
   if(!Username || !Password){
       promiseHandler.handleFailure(res,401,"Credentials missing")
   }
@@ -182,7 +182,7 @@ const deleteImage = async (req, res) => {
   const authorization = req.headers.authorization
 
   //validate token value
-  const [Username, Password] = validateToken(authorization)
+  const [Username, Password] = validateToken.validateToken(authorization)
   if(!Username || !Password){
       promiseHandler.handleFailure(res,401,"Credentials missing")
   }
