@@ -207,7 +207,7 @@ const editUser = async (req, res) => {
         }
     }
 }
-s
+
 // check if the token is present in Dynamo db for the user
 const verifyUser = (req, res) => {
     const {email,token} = req.query
