@@ -254,6 +254,7 @@ const editUser = async (req, res) => {
 // check if the token is present in Dynamo db for the user
 const verifyUser = (req, res) => {
     const {email,token} = req.query
+    console.log(email,token)
     //write validate token function in dynamodb utils to compare values from dynamo db and query parameters
     var params = {
         TableName: "csye6225-dynamodb",
@@ -264,11 +265,13 @@ const verifyUser = (req, res) => {
     };
     docClient.get(params,(err, resp) => {
         if(err){
+            console.log(err)
             promiseHandler.handleError(err,res)
         }else{
             let isTokenValid = false;
             console.log("Checking if record already present in DB!!");
             if (data.Item == null || record.Item == undefined) {
+                console.log("data not found")
                 log.error("No record in Dynamo ");
                 isTokenValid = false;
             } else {
@@ -279,7 +282,9 @@ const verifyUser = (req, res) => {
                     log.success("TTL record valid ");
                     isTokenValid = true;
                 }
-            }if(isTokenValid){
+            }
+            console.log()
+            if(isTokenValid){
                 userService.changeVerificationStatus(email)
                 .then(()=>{
                     promiseHandler.handlePromise("Verified",200)
