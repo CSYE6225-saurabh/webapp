@@ -29,6 +29,7 @@
     "mysql2": "^2.3.0",
     "node-statsd": "^0.1.1",
     "nodemon": "^2.0.13",
+    "random-token": "0.0.8",
     "sequelize": "^6.9.0",
     "statsd-client": "^0.4.7"
   },
