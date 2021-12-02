@@ -257,7 +257,7 @@ const verifyUser = (req, res) => {
     console.log(email,token)
     //write validate token function in dynamodb utils to compare values from dynamo db and query parameters
     var params = {
-        TableName: "csye6225-dynamodb",
+        TableName: "csye6225-dynamo",
         Key:{
             "UserName":email,
             "Token":token
