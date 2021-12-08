@@ -296,7 +296,7 @@ const verifyUser = (req, res) => {
                     res.send(400)
                 })
             }else{
-                promiseHandler.handleFailure(res,400,"TTL Validation failed. Cannot approve usersssss")
+                promiseHandler.handleFailure(res,400,"TTL Validation failed. Cannot approve user")
             }
 
         }
