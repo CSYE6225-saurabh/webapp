@@ -4,17 +4,17 @@ const connection = require('../config/db.config')
 
 //Create a database connection
 const sqlze = new Sequelize(
-  connection.DB,
-  connection.USER,
-  connection.PASSWORD,
+  connection.db,
+  connection.user,
+  connection.password,
   {
     dialect: connection.dialect,
     replication: {
       read:[
-        {host: connection.HOSTREADREPLICA}
+        {host: connection.hostReplica}
       ],
       write: {
-        host: connection.HOST
+        host: connection.host
       }
     }
   },
