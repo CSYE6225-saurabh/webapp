@@ -16,6 +16,12 @@ const sqlze = new Sequelize(
       write: {
         host: connection.host
       }
+    },
+    dialectOptions:{
+      ssl: {
+        rejectUnauthorized: true,
+        ca: [connection.rdsCa]
+      }
     }
   },
 )

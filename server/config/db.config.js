@@ -1,6 +1,7 @@
 
 const fs = require('fs');
 const data = fs.readFileSync("/home/ubuntu/server/config.json");
+const rdsCa = fs.readFileSync("./us-east-1-bundle.cer")
 const temp = JSON.parse(data);
 module.exports = {
     host: temp.host.split(":")[0],
@@ -11,7 +12,8 @@ module.exports = {
     dialect : "mysql",
     s3: temp.s3,
     port: temp.port,
-    topicArn : temp.topic_arn
+    topicArn : temp.topic_arn,
+    rdsCa: rdsCa
   };
 
 
