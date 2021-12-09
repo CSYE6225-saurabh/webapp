@@ -1,7 +1,8 @@
 
 const fs = require('fs');
+
 const data = fs.readFileSync("/home/ubuntu/server/config.json");
-const rdsCa = fs.readFileSync("./us-east-1-bundle.cer")
+const rdsCa = fs.readFileSync("/home/ubuntu/webapp/server/config/us-east-1-bundle.cer");
 const temp = JSON.parse(data);
 module.exports = {
     host: temp.host.split(":")[0],
